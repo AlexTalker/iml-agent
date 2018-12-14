@@ -12,7 +12,6 @@ from xml.dom.minidom import parseString
 
 from chroma_agent import config
 from chroma_agent.action_plugins.manage_pacemaker import PreservePacemakerCorosyncState
-from chroma_agent.device_plugins.block_devices import get_local_mounts
 from chroma_agent.lib.shell import AgentShell
 from chroma_agent.log import console_log
 from iml_common.blockdevices.blockdevice import BlockDevice
@@ -787,27 +786,6 @@ def _get_target_config(uuid):
     return info
 
 
-def target_running(uuid):
-    # This is called by the Target RA from corosync
-    from os import _exit
-    try:
-        info = _get_target_config(uuid)
-    except (KeyError, TypeError) as err:
-        # it can't possibly be running here if the config entry for
-        # it doesn't even exist, or if the store doesn't even exist!
-        console_log.warning("Exception getting target config: %s", err)
-        _exit(1)
-
-    filesystem = FileSystem(info['backfstype'], info['bdev'])
-
-    for device, mntpnt in get_local_mounts()[0:2]:
-        if (mntpnt == info['mntpt']) and filesystem.devices_match(device, info['bdev'], uuid):
-            _exit(0)
-
-    console_log.warning("Did not find mount with matching mntpt and device for %s", uuid)
-    _exit(1)
-
-
 def purge_configuration(mgs_device_path, mgs_device_type, filesystem_name):
     mgs_bdev = BlockDevice(mgs_device_type, mgs_device_path)
 
@@ -899,6 +877,6 @@ ACTIONS = [purge_configuration, register_target,
            start_target, stop_target,
            format_target, check_block_device,
            writeconf_target, failback_target,
-           failover_target, target_running,
+           failover_target,
            convert_targets,
            configure_target_store, unconfigure_target_store]
