@@ -8,8 +8,6 @@ class PatchedContextTestCase(unittest.TestCase):
         self._test_root = None
 
         empty_map = {'blockDevices': {}, 'zed': {}, 'localMounts': []}
-        mock.patch('chroma_agent.device_plugins.block_devices.scanner_cmd',
-                   return_value=empty_map).start()
 
     def _find_subclasses(self, klass):
         """Introspectively find all descendents of a class"""
